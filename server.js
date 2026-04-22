@@ -6,10 +6,47 @@ const cors = require('cors');
 const app = express();
 const PORT = 3001;
 const analyticsFile = path.join(__dirname, 'analytics.json');
+const statsFile = path.join(__dirname, 'STATS.txt');
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
+
+// Функция для обновления текстового файла со статистикой
+function updateStatsFile() {
+  try {
+    const data = JSON.parse(fs.readFileSync(analyticsFile, 'utf8'));
+    const now = new Date().toLocaleString('ru-RU');
+    
+    let statsText = `═══════════════════════════════════════════════════════
+                    📊 TRUSTEX ANALYTICS
+═══════════════════════════════════════════════════════
+
+📱 ПОСЕЩЕНИЯ ПРЕЛЕНДА:  ${data.pageViews}
+🔘 КЛИКИ ПО КНОПКЕ:    ${data.buttonClicks}
+
+─────────────────────────────────────────────────────
+Последние 20 событий:
+─────────────────────────────────────────────────────
+
+`;
+
+    const recentEvents = data.events.slice(-20).reverse();
+    recentEvents.forEach((event, idx) => {
+      const time = new Date(event.timestamp).toLocaleString('ru-RU');
+      const eventName = event.type === 'page_view' ? '👁️  Посещение' : '🔘 Клик';
+      statsText += `${idx + 1}. ${eventName} — ${time}\n`;
+    });
+    
+    statsText += `\n═══════════════════════════════════════════════════════
+Обновлено: ${now}
+═══════════════════════════════════════════════════════`;
+
+    fs.writeFileSync(statsFile, statsText);
+  } catch (error) {
+    console.error('Ошибка обновления STATS.txt:', error);
+  }
+}
 
 // Инициализируем файл аналитики если его нет
 if (!fs.existsSync(analyticsFile)) {
@@ -18,6 +55,7 @@ if (!fs.existsSync(analyticsFile)) {
     buttonClicks: 0,
     events: []
   }, null, 2));
+  updateStatsFile();
 }
 
 // Получение текущей аналитики
@@ -55,6 +93,9 @@ app.post('/api/event', (req, res) => {
     
     fs.writeFileSync(analyticsFile, JSON.stringify(data, null, 2));
     
+    // Обновляем текстовый файл
+    updateStatsFile();
+    
     console.log(`✅ Событие сохранено | Views: ${data.pageViews} | Clicks: ${data.buttonClicks}\n`);
     
     res.json({ success: true, data });
@@ -66,5 +107,7 @@ app.post('/api/event', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`\n✅ Analytics server running on http://localhost:${PORT}`);
-  console.log(`📊 Analytics file: ${analyticsFile}\n`);
+  console.log(`📊 Analytics JSON: ${analyticsFile}`);
+  console.log(`📄 Stats TXT:      ${statsFile}\n`);
+  updateStatsFile();
 });
