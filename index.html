@@ -25,8 +25,35 @@
 		</main>
 
 		<script>
+			// Отправка события на локальный сервер
+			function sendAnalyticsEvent(eventType) {
+				fetch('http://localhost:3000/api/event', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						eventType: eventType,
+						timestamp: new Date().toISOString()
+					})
+				}).catch(() => {
+					// Сервер может быть не запущен, логируем в консоль
+					console.log('Analytics server not running, but event would be:', eventType);
+				});
+			}
+
+			// Отслеживание просмотра страницы
+			window.addEventListener('load', function() {
+				sendAnalyticsEvent('page_view');
+				// Также отправляем в Google Analytics
+				gtag('event', 'page_view');
+			});
+
 			// Отслеживание клика по кнопке Telegram
 			document.getElementById('tg-button').addEventListener('click', function() {
+				sendAnalyticsEvent('button_click');
+				
+				// Отправляем в Google Analytics
 				gtag('event', 'button_click', {
 					'event_category': 'engagement',
 					'event_label': 'telegram_button',
