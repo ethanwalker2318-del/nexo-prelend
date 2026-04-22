@@ -132,7 +132,7 @@
 	</div>
 
 	<script>
-		const analyticsUrl = 'http://localhost:3000/api/analytics';
+		const analyticsUrl = 'http://localhost:3001/api/analytics';
 
 		async function updateAnalytics() {
 			try {
@@ -161,7 +161,7 @@
 				});
 			} catch (error) {
 				console.error('Ошибка подключения к серверу:', error);
-				document.querySelector('.refresh-info').textContent = '❌ Сервер не запущен. Запустите: npm start';
+				document.querySelector('.refresh-info').textContent = '❌ Сервер не запущен. Запустите: start-analytics.bat';
 			}
 		}
 

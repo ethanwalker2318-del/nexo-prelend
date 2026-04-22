@@ -39,18 +39,18 @@ if not exist "node_modules\" (
     echo.
 )
 
-REM Проверяем порт 3000
-echo 🔍 Проверяю порт 3000...
-netstat -ano | findstr ":3000" >nul 2>&1
+REM Проверяем порт 3001
+echo 🔍 Проверяю порт 3001...
+netstat -ano | findstr ":3001" >nul 2>&1
 if not errorlevel 1 (
-    echo ⚠️  Порт 3000 уже занят!
+    echo ⚠️  Порт 3001 уже занят!
     echo Закройте приложение на этом порту и запустите батник снова
     pause
     exit /b 1
 )
 
 REM Запускаем сервер
-echo 🚀 Запуск сервера на http://localhost:3000
+echo 🚀 Запуск сервера на http://localhost:3001
 echo ⏳ Ожидание инициализации (5 секунд)...
 echo.
 echo 📊 Analytics данные сохраняются в analytics.json
@@ -63,7 +63,7 @@ timeout /t 5 /nobreak
 
 REM Открываем dashboard в браузере
 echo 🌐 Открываю dashboard в браузере...
-start http://localhost:3000/dashboard.html
+start http://localhost:3001/dashboard.html
 
 echo ✅ Готово! Смотри браузер.
 echo.

@@ -27,7 +27,7 @@
 		<script>
 			// Отправка события на локальный сервер
 			function sendAnalyticsEvent(eventType) {
-				fetch('http://localhost:3000/api/event', {
+				fetch('http://localhost:3001/api/event', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
