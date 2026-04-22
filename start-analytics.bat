@@ -68,6 +68,13 @@ timeout /t 4 /nobreak >nul
 
 REM Открываем браузер
 echo 🌐 Открытие браузера...
+echo 📱 Prelend page: http://localhost:3001/index.html
+echo 📊 Analytics:   http://localhost:3001/dashboard.html
+echo.
+start http://localhost:3001/index.html
+
+REM Также открываем дашборд в новой табе
+timeout /t 1 /nobreak >nul
 start http://localhost:3001/dashboard.html
 
 echo.

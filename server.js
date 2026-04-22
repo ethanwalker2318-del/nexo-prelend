@@ -30,29 +30,38 @@ app.get('/api/analytics', (req, res) => {
 app.post('/api/event', (req, res) => {
   const { eventType, timestamp } = req.body;
   
-  const data = JSON.parse(fs.readFileSync(analyticsFile, 'utf8'));
+  console.log(`\n📨 Получено событие: ${eventType}`);
+  console.log(`   Origin: ${req.get('origin')}`);
+  console.log(`   Время: ${timestamp}`);
   
-  if (eventType === 'page_view') {
-    data.pageViews++;
-  } else if (eventType === 'button_click') {
-    data.buttonClicks++;
+  try {
+    const data = JSON.parse(fs.readFileSync(analyticsFile, 'utf8'));
+    
+    if (eventType === 'page_view') {
+      data.pageViews++;
+    } else if (eventType === 'button_click') {
+      data.buttonClicks++;
+    }
+    
+    data.events.push({
+      type: eventType,
+      timestamp: timestamp || new Date().toISOString()
+    });
+    
+    // Держим только последние 1000 событий
+    if (data.events.length > 1000) {
+      data.events = data.events.slice(-1000);
+    }
+    
+    fs.writeFileSync(analyticsFile, JSON.stringify(data, null, 2));
+    
+    console.log(`✅ Событие сохранено | Views: ${data.pageViews} | Clicks: ${data.buttonClicks}\n`);
+    
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('❌ Ошибка обработки события:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
-  
-  data.events.push({
-    type: eventType,
-    timestamp: timestamp || new Date().toISOString()
-  });
-  
-  // Держим только последние 1000 событий
-  if (data.events.length > 1000) {
-    data.events = data.events.slice(-1000);
-  }
-  
-  fs.writeFileSync(analyticsFile, JSON.stringify(data, null, 2));
-  
-  console.log(`[${new Date().toISOString()}] Event: ${eventType} | Views: ${data.pageViews} | Clicks: ${data.buttonClicks}`);
-  
-  res.json({ success: true, data });
 });
 
 app.listen(PORT, () => {

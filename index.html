@@ -27,6 +27,8 @@
 		<script>
 			// Отправка события на локальный сервер
 			function sendAnalyticsEvent(eventType) {
+				console.log('📊 Отправляю событие:', eventType);
+				
 				fetch('http://localhost:3001/api/event', {
 					method: 'POST',
 					headers: {
@@ -36,21 +38,27 @@
 						eventType: eventType,
 						timestamp: new Date().toISOString()
 					})
-				}).catch(() => {
-					// Сервер может быть не запущен, логируем в консоль
-					console.log('Analytics server not running, but event would be:', eventType);
+				})
+				.then(response => response.json())
+				.then(data => {
+					console.log('✅ Событие успешно отправлено:', data);
+				})
+				.catch(error => {
+					console.error('❌ Ошибка отправки события:', error);
 				});
 			}
 
 			// Отслеживание просмотра страницы
 			window.addEventListener('load', function() {
+				console.log('📄 Страница загружена, отправляю page_view');
 				sendAnalyticsEvent('page_view');
 				// Также отправляем в Google Analytics
 				gtag('event', 'page_view');
 			});
 
 			// Отслеживание клика по кнопке Telegram
-			document.getElementById('tg-button').addEventListener('click', function() {
+			document.getElementById('tg-button').addEventListener('click', function(e) {
+				console.log('🔘 Нажата кнопка, отправляю button_click');
 				sendAnalyticsEvent('button_click');
 				
 				// Отправляем в Google Analytics
@@ -58,6 +66,8 @@
 					'event_category': 'engagement',
 					'event_label': 'telegram_button',
 					'button_text': 'Открыть в Telegram'
+				});
+			});
 				});
 			});
 		</script>
