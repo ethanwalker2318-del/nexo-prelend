@@ -9,42 +9,39 @@ echo ╚════════════════════════
 echo.
 
 REM Проверяем есть ли Node.js
-node --version >nul 2>&1
+where node >nul 2>&1
 if errorlevel 1 (
-    echo ❌ Node.js не установлен!
-    echo 📥 Скачайте: https://nodejs.org/
+    echo ❌ Node.js не найден в PATH!
+    echo.
+    echo 📥 Действия:
+    echo 1. Скачайте Node.js с https://nodejs.org/
+    echo 2. Установите его
+    echo 3. Перезагрузите компьютер
+    echo 4. Запустите батник снова
+    echo.
     pause
     exit /b 1
 )
 
-echo ✅ Node.js найден
+echo ✅ Node.js найден:
 node --version
 echo.
 
 REM Переходим в папку проекта
 cd /d "%~dp0"
-
-REM Закрываем старые процессы на портах если они есть
-echo 🧹 Очистка старых процессов...
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":3001"') do (
-    echo   Закрываю процесс %%a...
-    taskkill /PID %%a /F >nul 2>&1
-)
-
-REM Убиваем node процессы которые уже запущены
-taskkill /IM node.exe /F >nul 2>&1
-
-echo ✅ Старые процессы закрыты
+echo 📁 Рабочая папка: %CD%
 echo.
 
 REM Проверяем есть ли node_modules
-if not exist "node_modules\" (
-    echo 📦 Установка зависимостей...
-    call npm install --legacy-peer-deps
+if not exist "node_modules" (
+    echo 📦 Установка npm зависимостей...
+    call npm install
     if errorlevel 1 (
-        echo ❌ Ошибка при установке зависимостей
-        echo Попробуйте запустить в PowerShell:
-        echo npm install --legacy-peer-deps
+        echo ❌ Ошибка при установке!
+        echo.
+        echo Попробуйте вручную запустить:
+        echo   npm install
+        echo.
         pause
         exit /b 1
     )
@@ -52,34 +49,29 @@ if not exist "node_modules\" (
     echo.
 )
 
-REM Очищаем npm кеш на всякий случай
-echo 🔄 Проверка целостности npm...
-npm cache clean --force >nul 2>&1
+REM Закрываем старые Node процессы
+echo 🧹 Закрытие старых процессов Node.js...
+taskkill /IM node.exe /F >nul 2>&1
 
-REM Даём время на освобождение портов
-echo ⏳ Ожидание 2 секунды...
+REM Небольшая задержка
 timeout /t 2 /nobreak >nul
 
 REM Запускаем сервер
-echo.
-echo 🚀 Запуск сервера на http://localhost:3001
-echo ⏳ Ожидание инициализации (5 секунд)...
-echo.
-echo 📊 Analytics данные сохраняются в analytics.json
-echo 🔴 Нажмите Ctrl+C для остановки сервера
+echo 🚀 Запуск сервера...
 echo.
 
-REM Запускаем npm start в отдельном окне
-start "TrustEx Analytics Server" cmd /k "cd /d %~dp0 && npm start"
+REM Запускаем в отдельном окне
+start "TrustEx Server" cmd /k "cd /d %~dp0 && node server.js"
 
-REM Даём серверу время на запуск
-timeout /t 5 /nobreak >nul
+REM Ждем инициализации
+timeout /t 4 /nobreak >nul
 
-REM Открываем dashboard в браузере
-echo 🌐 Открываю dashboard в браузере...
+REM Открываем браузер
+echo 🌐 Открытие браузера...
 start http://localhost:3001/dashboard.html
 
 echo.
-echo ✅ Готово! Смотри браузер.
+echo ✅ Сервер запущен на http://localhost:3001
+echo 📊 Дашборд откроется в браузере
 echo.
 pause
