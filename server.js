@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const { execSync } = require('child_process');
 
 const app = express();
 const PORT = 3001;
@@ -11,6 +12,20 @@ const statsFile = path.join(__dirname, 'STATS.txt');
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
+
+// Функция для сохранения в GitHub
+function pushToGitHub() {
+  try {
+    process.chdir(__dirname);
+    execSync('git add analytics.json', { stdio: 'pipe' });
+    execSync('git commit -m "Auto-update analytics"', { stdio: 'pipe' });
+    execSync('git push', { stdio: 'pipe' });
+    console.log('✅ Данные обновлены на GitHub');
+  } catch (error) {
+    console.error('⚠️  Не удалось обновить GitHub (git push):', error.message);
+    // Это не критичная ошибка - данные все равно сохранены локально
+  }
+}
 
 // Функция для обновления текстового файла со статистикой
 function updateStatsFile() {
@@ -96,7 +111,10 @@ app.post('/api/event', (req, res) => {
     // Обновляем текстовый файл
     updateStatsFile();
     
-    console.log(`✅ Событие сохранено | Views: ${data.pageViews} | Clicks: ${data.buttonClicks}\n`);
+    console.log(`✅ Событие сохранено | Views: ${data.pageViews} | Clicks: ${data.buttonClicks}`);
+    
+    // Пушим на GitHub в фоне (не блокируем ответ)
+    setTimeout(() => pushToGitHub(), 100);
     
     res.json({ success: true, data });
   } catch (error) {
@@ -108,6 +126,7 @@ app.post('/api/event', (req, res) => {
 app.listen(PORT, () => {
   console.log(`\n✅ Analytics server running on http://localhost:${PORT}`);
   console.log(`📊 Analytics JSON: ${analyticsFile}`);
-  console.log(`📄 Stats TXT:      ${statsFile}\n`);
+  console.log(`📄 Stats TXT:      ${statsFile}`);
+  console.log(`📤 GitHub sync:    Enabled\n`);
   updateStatsFile();
 });

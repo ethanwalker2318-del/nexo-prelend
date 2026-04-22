@@ -32,6 +32,12 @@ cd /d "%~dp0"
 echo 📁 Рабочая папка: %CD%
 echo.
 
+REM Скачиваем последние данные с GitHub
+echo 📥 Загрузка последних данных с GitHub...
+git pull origin main >nul 2>&1
+echo ✅ Данные загружены
+echo.
+
 REM Проверяем есть ли node_modules
 if not exist "node_modules" (
     echo 📦 Установка npm зависимостей...
